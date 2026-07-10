@@ -17,13 +17,18 @@ service marketing.
    then ask Claude: *"Do an MAA for this account"* and attach them. The analyzer
    handles the rest and pulls in the other skills as needed.
 3. **Read the example** in `shared/examples/` to see what good output looks like.
-4. **Automate it (optional).** Ask for *"a Google Ads script that emails me the
+4. **Connect live data (recommended).** Set up the Google Ads MCP
+   (`shared/frameworks/mcp-setup-guide.md`) and the analyzer pulls every dataset
+   straight from the API — correctly-labeled Quality Score components, no email
+   plumbing, and it can pull follow-up data mid-analysis when its own findings
+   raise a question.
+5. **Or automate via email.** Ask for *"a Google Ads script that emails me the
    weekly MAA data"* and the `google-ads-script` skill builds the pipeline so
-   future MAAs run from an automatic weekly email.
+   future MAAs run from an automatic weekly email. This is also the recommended
+   backup for scheduled runs while MCP authorization persistence is unsolved.
 
-For the complete operating loop — building and scheduling the data script,
-setting up the Gmail label, running the analysis, reviewing, and rendering the
-client report — see **WALKTHROUGH.md**.
+For the complete operating loop — connecting the data source, running the
+analysis, reviewing, and rendering the client report — see **WALKTHROUGH.md**.
 
 ## What's in the box
 
@@ -82,17 +87,31 @@ manually even without Claude.
 
 The intended loop is weekly:
 
-1. A Google Ads Script (built by `google-ads-script`) emails campaign data each
-   week. See `shared/frameworks/data-pipeline-contract.md` for the exact format.
-2. `google-ads-analyzer` reads that data and writes an MAA, dispatching the copy
-   optimizer / change scripts / LP auditor where the data warrants.
+1. `google-ads-analyzer` pulls the account data — live via the Google Ads MCP
+   (primary; see `shared/frameworks/mcp-setup-guide.md` and
+   `shared/frameworks/gaql-query-pack.md`), or from the weekly data email
+   (fallback; `shared/frameworks/data-pipeline-contract.md`).
+2. It writes the MAA, dispatching the copy optimizer / change scripts / LP
+   auditor where the data warrants — and on the MCP path, pulling follow-up
+   data mid-analysis instead of deferring open questions a week.
 3. You review, approve, and run the generated scripts (always dry-run first).
+   The MCP is read-only by design; every account change ships as a
+   dry-run-first script.
 4. `google-ads-client-view` renders the MAA into a client-facing report you can
    paste into Basecamp (or any rich-text tool) for delivery.
 
 **Full step-by-step:** WALKTHROUGH.md covers the end-to-end weekly system, from
-cold install through client delivery, including the one-time email-label and
-script-scheduling setup.
+cold install through client delivery, including both data-source setups.
+
+## Roadmap
+
+- **Persistent MCP authorization.** Current Google Ads MCP setups can require
+  frequent reauthorization, which is the main blocker between ~90% autonomous
+  weekly runs and fully hands-off scheduled runs. Until it's solved, keep the
+  email pipeline wired as the fallback for scheduled runs.
+- **Deeper mid-cycle data pulls.** The analyzer already answers its own
+  questions with follow-up MCP pulls; extending that pattern to more sources
+  (page speed, keyword research, analytics) is ongoing.
 
 You can also run any skill ad hoc — "review this landing page," "write headlines
 for this ad group," "build a script that does X." Triggers are listed in each

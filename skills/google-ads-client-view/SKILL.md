@@ -135,17 +135,28 @@ each section may draw from.
 | Client-view section | Source in the MAA |
 |---|---|
 | Header + status dot (🟢/🟡/🔴) | Overall tone of the MAA. 🟢 on track, 🟡 watch, 🔴 needs attention. Do not overclaim a 🟢 if the MAA hedges. |
-| **The bottom line** (1 paragraph) | The MAA's opening / bottom-line paragraph, lightly trimmed. Plain language, no QS/IS/CPA jargon above the fold. |
+| **The bottom line** (1 paragraph) | The MAA's opening / bottom-line paragraph, lightly trimmed. Plain language, no QS/IS/CPA jargon above the fold. **Keep it confident: do not end the above-the-fold summary on a caveat.** On a strong week the client's first read should carry the win; a hedge like "bookings were light, we're keeping an eye on it" belongs down in the 🟡 section, not in the opening paragraph. Trim a trailing caveat sentence rather than leading the eye to it. |
 | **The trend** (2 charts) | The PNGs from Step 2. Caption only if needed; no value judgments. |
 | **What's working ✅** | The positive findings already stated in Analysis. Each bullet a real finding (e.g. "new ad drove 10 conversions at $21.49"), not a vibe. |
-| **What needs attention 🔴** | Client-facing critical/decision items only, typically the one or two things the client must weigh (budget cap costing leads, broken tracking). Our-side fixes do NOT go here. |
-| **What we need from you 👉** | The **client-side** Action items. Keep the ask plus the one-line why. |
-| **What we did this week** | The **our-side** Action items (staged dispatches, launches, negatives), phrased as done/in-progress, no action needed. |
+| **What needs attention 🔴 / 🟡** | Client-facing critical/decision items only. Use 🔴 only for something actively costing the client (budget cap losing leads, broken tracking) or a decision that cannot wait. An **our-side visibility gap** — e.g. "we can't yet confirm booked jobs" — is 🟡 (watch), not 🔴: a caution, not a crisis. Our-side fixes do NOT go here at all. **When a 🟡 item is really an arrangement, not a problem, frame it as the arrangement.** Write the shared plan and the client's low-effort role in it ("we'll rely on you to flag it if lead quality dips"), not our deficiency ("we still cannot tie leads to jobs"). Same fact, calmer read. Drop the alarm-style bold headline when the item is a heads-up rather than a crisis. |
+| **What we need from you 👉** | The **client-tagged** Action items (owner tagged inline in the MAA's single Action list). Keep the ask plus the one-line why. **Carry only genuine asks — do not pad.** One real ask is correct and beats three padded ones. A resolved former ask drops off; it does not get reworded to fill the section. |
+| **What we did this week** | The **agency-tagged** Action items (staged dispatches, launches, negatives), phrased as done/in-progress, no action needed. |
 | **Full analysis** | The canonical MAA, reproduced **verbatim and in skill bullet format** (see Step 4). |
 
 Severity routing test for each finding: *Is there a decision only the client can
-make?* goes to 🔴 / "what we need from you". *Did we already handle or stage it?*
-goes to "what we did". *Is it a positive result?* goes to "what's working".
+make, and is something actively costing them or blocked until they act?* goes to
+🔴 / "what we need from you". *Is it a caution or an our-side visibility gap
+we're flagging but not blocked on?* goes to 🟡 (watch), not 🔴. *Did we already
+handle or stage it?* goes to "what we did". *Is it a positive result?* goes to
+"what's working". Route "what we need from you" vs "what we did" off the
+**inline owner tag** in the MAA's single Action list, not off per-person section
+headers.
+
+**"Render" means this skill.** When the user says "render," "render the report,"
+or "render the client view" for a Google Ads MAA — even mid-conversation,
+outside a full MAA run — produce these two outputs from the templates. Never
+satisfy a render request with an ad-hoc visualization/widget or a hand-built
+HTML mockup; that is not the deliverable and breaks the established pattern.
 
 ## Step 4: Render both outputs
 

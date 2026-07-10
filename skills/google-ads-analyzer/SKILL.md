@@ -57,6 +57,12 @@ MAA — not in Metrics, not in Analysis, not in Action. Don't waste the reader's
 attention on campaigns that aren't running. If every campaign in the account is
 dormant, say so and skip straight to Action.
 
+**Local Services Ads (LSA) are out of scope.** LSA is a separate Google product
+with its own budget. MCP pulls surface LSA campaigns
+(`advertising_channel_type = LOCAL_SERVICES`); keep them out of the Search
+headline math and out of the report entirely, same treatment as dormant
+campaigns. If a client wants LSA reported, it's a separate deliverable.
+
 ### "We" Tone
 
 Write as an embedded team member. "We're seeing strong CTR on the emergency
@@ -118,7 +124,30 @@ whatever they actually share with the client.
 
 ## Step 2: Get the Data
 
-### Email Pipeline Mode (Primary)
+### MCP Mode (Primary)
+
+If a Google Ads MCP connector is available, pull every dataset live via its
+`search` tool (GAQL) against the client's CID, using
+`../../shared/frameworks/gaql-query-pack.md`: campaign summary, keyword report
+with Quality Score components, search terms, ad report (RSA assets + strength),
+and conversion detail by action name — each in 7D and 30D windows.
+
+Rules on this path:
+
+- **QS components arrive correctly labeled from the API. Read them AS-IS.** The
+  column swap below applies ONLY to the email fallback — applying it to MCP data
+  re-introduces the bug it exists to fix.
+- **The MCP is read-only.** It cannot mutate the account. Negatives, pauses,
+  bid and budget changes go through `google-ads-change-scripts`, never the MCP.
+  Reading current state to target a change is fine and encouraged.
+- **Mid-cycle pulls are cheap — use them.** When the analysis raises a question
+  the initial datasets can't answer, pull the extra data inside the same cycle
+  and turn the answer into a grounded action, instead of writing "keep watching"
+  and deferring it a week.
+- If a query fails or the MCP's authorization has lapsed, fall back to the email
+  pipeline below rather than stalling the run.
+
+### Email Pipeline Mode (Fallback)
 
 Data arrives automatically via Gmail from a Google Ads Script that runs weekly.
 Search Gmail for label `maa-data-automation` or subject prefix `[MAA Data]` to
@@ -149,18 +178,27 @@ Conversions, and Cost/Conv.
 Parse the CSV data between these markers. The client name is in the email
 subject: `[MAA Data] Client Name — YYYY-MM-DD`.
 
-### Quality Score column inversion — MANDATORY swap on Keyword Report parse
+### Quality Score column inversion — MANDATORY swap on EMAIL-PATH Keyword Report parse
 
-The deployed Google Ads Script (`maa-data-script-updated.js` in every client's
-account) has a known bug (discovered 2026-06-05): in `runKeywordQuery`, the GAQL
-select order for the three QS components doesn't match the CSV header order, which
-inverts the **Expected CTR** and **Ad Relevance** columns. Landing Page
-Experience is in the middle position and is correct.
+**Scope: this section applies to the email fallback only. MCP data arrives
+correctly labeled — never swap it.**
 
-**What this means at parse time:** the column labeled `Expected CTR` actually
-contains the **Ad Relevance** value, and the column labeled `Ad Relevance`
-actually contains the **Expected CTR** value. Swap them before using them in any
-analysis or dispatch decision.
+Deployed versions of the data-collection script have a known bug: in the keyword
+query, the GAQL select order for the three QS components doesn't match the CSV
+header order, which inverts the **Expected CTR** and **Ad Relevance** columns.
+Landing Page Experience is in the middle position and is correct.
+
+**Preferred fix — run the corrector at ingest (mechanical, not a judgment
+call):**
+
+```
+python3 shared/scripts/correct_qs_columns.py --infile {date}_email-data.txt
+```
+
+Then read the `_corrected.txt` file and treat every column AS-LABELED. Do NOT
+swap again — double-swapping re-introduces the bug.
+
+**Manual fallback** (only if the corrector cannot run):
 
 ```
 For each row in KEYWORD REPORT 30D and KEYWORD REPORT 7D:
@@ -169,20 +207,23 @@ For each row in KEYWORD REPORT 30D and KEYWORD REPORT 7D:
   lp_experience_value  = row["Landing Page Exp"]  # correct as labeled
 ```
 
-After the swap, use the *swapped* values in QS component callouts in Analysis,
+After correction, use the corrected values in QS component callouts in Analysis,
 any per-keyword QS narrative, and the dispatch triggers (Below Average Ad
 Relevance vs. Expected CTR route to different copy fixes — getting the component
-right is the whole point). The swap is **mandatory** for every Keyword Report
-parse.
+right is the whole point).
+
+**Sanity check every run:** keep a per-client anchor (the highest-spend scored
+keyword and its known corrected component reads) in the client's notes, and
+confirm this week's parse matches it before writing. **Do not print the swap in
+the report body** — apply it silently and report only corrected component names.
 
 **Why this lives in the skill body, not just the framework:** this rule
-previously lived only in `Data-Pipeline-Contract`, and a heavier analyzer prompt
-(the v2 challenger) read the columns at face value and mislabeled a component on
-a live client MAA. Restating it in the body makes it un-missable.
+previously lived only in the data-pipeline contract, and a heavier analyzer
+prompt read the columns at face value and mislabeled a component on a live
+client MAA. Restating it in the body makes it un-missable.
 
-**When this rule will be retired:** if/when the corrected script is deployed to
-every active client account, this swap becomes a bug (it would re-invert
-correctly-labeled data) — remove it then, or gate it on an email version marker.
+**When this rule will be retired:** per-account, only when a corrected script is
+confirmed deployed there — otherwise the swap re-inverts correctly-labeled data.
 See `../../shared/frameworks/data-pipeline-contract.md` for the canonical column
 mapping and the conditions under which this swap applies.
 
@@ -283,6 +324,35 @@ the algorithm from stabilizing.
 
 The goal of Action is 2-3 solid things we can do this week to improve
 performance — not a list of everything that could theoretically be better.
+
+### Structure Before Tactics — Sequence the Fix
+
+Recommendations have a dependency order. The **structural layer** (account and
+campaign structure, geo-targeting, conversion tracking) gates the **tactical
+layer** (landing pages, keyword routing, bids, ad copy). Never recommend a
+tactic that a pending structural change will redo. Before writing any tactical
+action, ask: "Does a structural change we are also recommending change where
+this tactic lands?" If yes, sequence the structural item first and say so.
+
+- **Landing pages depend on campaign structure.** Don't repoint ads or keywords
+  to specific pages before the campaigns those ads live in are settled. If
+  campaigns are about to split, page assignment happens after the split.
+- **Bidding depends on conversion tracking.** Don't recommend a bid-strategy or
+  primary-conversion change before tracking is validated, and check the chosen
+  conversion has enough per-campaign volume to support the strategy (smart
+  bidding wants roughly 15-30 conversions per campaign per 30 days).
+
+### Verify Structure From the Data, Never From Names
+
+An account or campaign named for one city may target the whole metro. Pull the
+actual geo-targeting and campaign structure before making any geo or
+landing-page recommendation. Names lie; settings don't.
+
+### Label Inferences as Inferences
+
+A plausible read of the data is not a fact. If per-action conversion counts look
+like they overlap, say "this looks like X, to be verified at the source," not "X
+is happening." Verify at the source before recommending action on it.
 
 ### Check A — Is the foundation working?
 
@@ -594,6 +664,21 @@ mentioning the ladder). Each action step should:
 - State what to do in plain language
 - State why, linked to something in the Analysis
 - Note expected impact where possible
+
+**One Action list, owners tagged inline.** Write a single numbered list with the
+owner tagged inline (e.g. "... (Josh)" for a client decision; agency items carry
+the agency owner or none). Do NOT split Action into per-person sub-sections —
+the split invites padding one person's list to look balanced. The inline tag is
+also what the client-view render routes on: client-tagged items feed "what we
+need from you," agency-tagged items feed "what we did."
+
+**No padding, no non-actions.** Never invent items to hit a count. "Keep holding
+budget," "continue monitoring," and "no change needed" are Analysis conclusions,
+not Actions. Three real items beat five with filler.
+
+**No method notes in the report body.** Internal data-integrity steps (the QS
+corrector, delta computation rules) never appear in the MAA or client view.
+Apply them silently.
 
 **Every action item must be forward-facing.** The test: does this item
 describe something we're going to *do*, or something we already *did*?

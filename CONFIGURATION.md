@@ -24,18 +24,26 @@ The per-client subfolder is created automatically if it doesn't exist.
 
 ## Data source
 
-The analyzer expects Google Ads data in the format described in
-`shared/frameworks/data-pipeline-contract.md`. The two normal ways to feed it:
+Three ways to feed the analyzer, in priority order (full rules in
+`shared/frameworks/data-pipeline-contract.md`):
 
-1. **Automated weekly email** (recommended). Use `google-ads-script` to build a
-   collection script that runs in the account and emails the 10 datasets each
-   week. Point the analyzer at whatever inbox/label receives it.
-2. **Manual exports.** Paste or upload CSV exports (campaign summary, keyword
+1. **Google Ads MCP** (recommended). Connect a Google Ads MCP server and record
+   each client's CID. The analyzer pulls every dataset live via GAQL
+   (`shared/frameworks/gaql-query-pack.md`) — correctly-labeled data, no email
+   plumbing, and mid-analysis follow-up pulls. The MCP is read-only; account
+   changes still go through change scripts.
+2. **Automated weekly email** (fallback / backup for scheduled runs). Use
+   `google-ads-script` to build a collection script that runs in the account and
+   emails the 10 datasets each week. Point the analyzer at whatever inbox/label
+   receives it.
+3. **Manual exports.** Paste or upload CSV exports (campaign summary, keyword
    report with Quality Score, search terms). The analyzer auto-detects what you
    provide and tells you what's missing.
 
-If your collection script has the known Quality Score column-swap bug, the
-analyzer corrects it automatically — see the data-pipeline contract for detail.
+If your collection script has the known Quality Score column-swap bug (email
+path only), run `shared/scripts/correct_qs_columns.py` on the raw data at
+ingest — see the data-pipeline contract for detail. Never apply the swap to MCP
+data.
 
 ## Optional: BlitzBase / vault continuity
 
