@@ -86,41 +86,48 @@ five questions if the user is ready to go:
 If the user says "just look at the data," work with what you have and flag
 context gaps as they become relevant in the analysis.
 
-## Step 1.5: Read the Narrative Document (if it exists)
+## Step 1.5: Load Client Continuity (auto-detect the mode)
 
-Before analyzing data, check whether a narrative document exists for this
-client. Narrative documents live in the client's output folder and follow the
-naming pattern `{Client}_MAA-Narrative.md`. They contain:
+Before analyzing data, check what continuity setup exists for this client, in
+this order:
 
-- **Account Context**: Static info about the business, campaigns, targets
-- **Client Contacts**: Name(s) and role(s) of the people who receive the MAA
-  or act on its recommendations (e.g., "Sam — account owner, makes strategic
-  decisions" or "Nicholas — manages the website, handles LP changes"). These
-  names are used throughout the MAA when action items require their input.
-- **Running Themes**: Persistent issues being tracked across weeks
-- **Weekly Log**: Dated entries with what was shared with the client, actions
-  taken, and client feedback
+**Knowledge-base mode** — the client's folder contains a `compiled/` wiki
+(see `CONFIGURATION.md` → "Knowledge-base mode"). Read:
 
-**If a narrative exists, read it before writing the MAA.** This is critical
-for continuity. Use it to:
+1. `client-knowledge-base.md` — who they are, contacts, engagement terms.
+2. `compiled/maa-metric-spec.md` — this client's section order and metric
+   names. It overrides this skill's generic format. **If it's missing, stop
+   and create it first** — from the most recent MAA in `raw/maa-reports/`,
+   or, for a brand-new client with no archive, from the structure this first
+   run will produce.
+3. `compiled/paid-status.md` (live QS state and the per-client QS anchor),
+   `compiled/active-issues.md`, `compiled/data-sources.md` (CID, data path),
+   and `compiled/trend.csv`.
+4. The most recent MAA in `raw/maa-reports/` — for week-over-week deltas and
+   for voice. The spec captures structure; the archived reports capture tone.
 
-- **Follow up on open threads**: If last week flagged "watch QS on keyword X,"
-  explicitly report on it this week. If an action was recommended (e.g., "add
-  negatives for competitor terms"), look in this week's data for evidence of
-  whether it was implemented.
-- **Avoid repeating yourself**: Don't re-explain context the narrative already
-  captures. Instead, reference it and build on it: "The DKI test we flagged
-  two weeks ago is now showing QS movement on geo keywords."
-- **Update running themes**: If a theme is resolved, note it. If a new pattern
-  emerges, add it.
+If the vault has a `clients/_shared/maa-skills-binding.md` (or equivalent
+overlay), read it and apply its overrides — naming, output paths, house style.
+The overlay wins over everything generic in this skill.
 
-**If no narrative exists**, proceed normally — the MAA will stand on its own.
-After delivering the MAA, create a new narrative document seeded with the
-account context and first weekly log entry.
+Wrap-up in this mode (weekly cycle only): update `paid-status.md` and
+`active-issues.md`, append the week's `trend.csv` row, archive the posted MAA
+to `raw/maa-reports/YYYY-MM-DD.md`. Do NOT create or update a narrative file.
 
-**If the user is running an ad-hoc analysis** (not a weekly cycle), still read
-the narrative for context but don't update it — the user will update it with
-whatever they actually share with the client.
+**Simple mode** — no `compiled/` folder, but a `{Client}_MAA-Narrative.md`
+exists in the client's output folder. Use it exactly as before: read it before
+writing (follow up on open threads, avoid repeating context, update running
+themes), and append a dated Weekly Log entry after each weekly MAA.
+
+**No continuity setup** — neither exists. Proceed normally; the MAA stands on
+its own. After delivering it, seed continuity for next time: in a structured
+vault, bootstrap the client folder per the vault's template; otherwise create
+a new `{Client}_MAA-Narrative.md` seeded with the account context and first
+weekly log entry.
+
+**Ad-hoc analyses** (not a weekly cycle): read the continuity docs for context
+but don't update them — the user will update them with whatever they actually
+share with the client.
 
 ## Step 2: Get the Data
 
@@ -440,10 +447,17 @@ folder doesn't exist, create it. The file should contain the full MAA (Metrics,
 Analysis, Action) as formatted markdown. Present the finished file to the user
 when complete.
 
-### Narrative Update (weekly cycle only)
+### Continuity Update (weekly cycle only)
 
 After delivering the MAA during a weekly analysis cycle, update the client's
-narrative document (`{Client}_MAA-Narrative.md`):
+continuity docs in whichever mode Step 1.5 detected.
+
+**Knowledge-base mode:** update `compiled/paid-status.md` and
+`compiled/active-issues.md`, append the week's `compiled/trend.csv` row, and
+archive the posted MAA to `raw/maa-reports/YYYY-MM-DD.md`. Do not create or
+update a narrative file.
+
+**Simple mode:** update the narrative document (`{Client}_MAA-Narrative.md`):
 
 1. **Add a new Weekly Log entry** at the top of the log (most recent first)
    with today's date. Include: key findings, actions recommended, and open

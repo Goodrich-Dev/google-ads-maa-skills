@@ -1,5 +1,56 @@
 # Changelog
 
+## 1.2.0 — 2026-07-23
+
+Continuity system upgraded from a single narrative file to an optional
+structured knowledge base, based on a live first-run test against a brand-new
+client account (no prior setup) that surfaced where the skills and a structured
+vault disagree.
+
+Continuity:
+- `CONFIGURATION.md`: "BlitzBase / vault continuity" section rewritten as
+  **two auto-detected continuity modes** — simple mode (the existing
+  `{Client}_MAA-Narrative.md`, unchanged, still the zero-setup default) and
+  **knowledge-base mode** (a `compiled/` wiki of living status docs:
+  `maa-metric-spec.md`, `paid-status.md`, `active-issues.md`,
+  `data-sources.md`, `trend.csv`, plus `raw/maa-reports/` as the delta and
+  voice source). When `compiled/` exists the analyzer reads and maintains it
+  instead of the narrative file.
+- First-run bootstrap rule: if `maa-metric-spec.md` is missing in
+  knowledge-base mode, the analyzer creates it before writing the report —
+  from the most recent archived MAA, or from the first run's own structure for
+  a brand-new client.
+- Overlay contract documented: a vault-level
+  `clients/_shared/maa-skills-binding.md` file may override any generic skill
+  convention (naming, section ordering, house style). Overlay wins over skill
+  defaults. This lets one public skill codebase serve differently-structured
+  private vaults without forking.
+
+Analyzer:
+- Narrative-file instructions scoped to simple mode only; knowledge-base mode
+  reads `client-knowledge-base.md` → `compiled/` → last archived MAA, and the
+  wrap-up updates `paid-status.md` / `active-issues.md` / `trend.csv` instead
+  of appending a narrative log entry.
+
+Notes from the first-run test that motivated this release:
+- A cold account with no prior setup produced a structurally sound MAA from
+  the skill alone (MCP path, QS components correctly read without the swap,
+  LSA correctly excluded), confirming the skills stand alone.
+- Everything that broke was continuity-layer, not analysis-layer: file naming,
+  narrative vs. wiki, house style rules the skill had no way to know. Hence
+  the overlay contract rather than more skill body text.
+
+Packaging & distribution:
+- Restored the missing `.claude-plugin/` folder (`plugin.json` +
+  `marketplace.json`) — the documented `/plugin marketplace add` install path
+  did not work without it.
+- Added `ONBOARDING-AGENCY.md` — a Cowork-focused setup checklist for a
+  third-party agency adopting the suite with their own MCC, credentials, and
+  Google Ads MCP deployment (Cloud Run connector recommended; no
+  managed-agent component). Includes weekly scheduled-run prompt template and
+  a troubleshooting table.
+
+
 ## 1.1.0 — 2026-07-10
 
 Synced from the live production version. The operating system these skills

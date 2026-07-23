@@ -45,10 +45,50 @@ path only), run `shared/scripts/correct_qs_columns.py` on the raw data at
 ingest — see the data-pipeline contract for detail. Never apply the swap to MCP
 data.
 
-## Optional: BlitzBase / vault continuity
+## Optional: client continuity
 
-If you keep a per-client knowledge base, create a narrative file named
-`{Client}_MAA-Narrative.md` in the client's output folder. When it exists, the
-analyzer reads it before writing (to follow up on open threads and avoid
-repeating context) and appends a dated log entry after each weekly MAA. Without
-it, every MAA simply stands on its own. No setup required either way.
+Without any setup, every MAA stands on its own. To give the analyzer memory
+across weeks, pick one of two modes — it auto-detects which one you're using by
+what exists in the client's folder.
+
+### Simple mode: a narrative file
+
+Create `{Client}_MAA-Narrative.md` in the client's output folder. When it
+exists, the analyzer reads it before writing (to follow up on open threads and
+avoid repeating context) and appends a dated log entry after each weekly MAA.
+One file, zero structure to maintain. Best for a single operator tracking a
+handful of accounts.
+
+### Knowledge-base mode: a compiled wiki
+
+If you run a structured per-client knowledge base (BlitzBase-style or your own),
+replace the single narrative file with living status docs the analyzer reads
+and maintains. The convention:
+
+```
+clients/{client}/
+├── client-knowledge-base.md      # index: who they are, contacts, engagement
+├── compiled/                     # the living wiki (analyzer reads AND updates)
+│   ├── maa-metric-spec.md        # this client's section order and metric names
+│   ├── paid-status.md            # live QS state, incl. the per-client QS anchor
+│   ├── active-issues.md          # open problems, feeds Analysis and Action
+│   ├── data-sources.md           # CID, data path, corrected-script status
+│   └── trend.csv                 # week,leads,cpl_week,cpl_30d (client-view input)
+├── deliverables/                 # dated outputs (MAAs, client views, scripts)
+└── raw/                          # append-only source material
+    ├── google-ads/               # raw pulls / email exports
+    └── maa-reports/              # archived past MAAs (delta + voice source)
+```
+
+When a `compiled/` folder exists, the analyzer treats it as the source of truth
+and does NOT create or update a narrative file: it reads the knowledge base and
+last archived MAA before writing, and its wrap-up updates `paid-status.md`,
+`active-issues.md`, and `trend.csv` instead of appending a narrative log entry.
+If `maa-metric-spec.md` is missing, the analyzer creates it on the first run
+from the most recent archived MAA (or from the first run's own structure for a
+brand-new client) before writing the report.
+
+A vault-level overlay file (e.g. `clients/_shared/maa-skills-binding.md`) may
+override any generic convention in these skills — file naming, section ordering,
+house style. If the client's knowledge base contains one, it wins over this
+document and over the skill defaults.
