@@ -1,0 +1,20 @@
+{
+    "name": "google-ads-maa-skills",
+    "owner": {
+          "name": "Goodrich-Dev",
+          "url": "https://github.com/Goodrich-Dev"
+    },
+    "metadata": {
+          "description": "Single-plugin marketplace for the Google Ads MAA skill suite.",
+          "version": "1.2.0"
+    },
+    "plugins": [
+          {
+                  "name": "google-ads-maa-skills",
+                  "source": "./",
+                  "description": "Google Ads MAA skill suite: analyzer, copy optimizer, change scripts, LP auditor, script builder, client-view renderer. MCP-first data sourcing with email fallback.",
+                  "category": "marketing",
+                  "strict": false
+          }
+    ]
+}
