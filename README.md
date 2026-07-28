@@ -53,6 +53,11 @@ See **PUBLISHING.md** for step-by-step instructions to put this on GitHub.
 
 ## Install
 
+**Requirements:** none for the core skills (they're Markdown). Optional extras:
+Python 3.x with `matplotlib` for the client-view trend charts
+(`pip install -r requirements.txt`), and `pipx` if you run the Google Ads MCP
+locally via stdio.
+
 These skills follow the standard Claude skill/plugin layout, so there are three
 ways to use them.
 
@@ -62,7 +67,7 @@ This repo is both a plugin and a single-plugin marketplace.
 
 ```
 # in Claude Code
-/plugin marketplace add <your-github-username>/google-ads-maa-skills
+/plugin marketplace add Goodrich-Dev/google-ads-maa-skills
 /plugin install google-ads-maa-skills
 ```
 
@@ -125,10 +130,12 @@ These skills are fully **standalone**. The MAA methodology, dispatch logic, and
 data-pipeline contract are bundled under `shared/frameworks/`, so nothing
 external is required.
 
-If you run a BlitzBase / vault knowledge base, you can point the output location
-at a client's vault folder and the analyzer will read and update a per-client
-narrative document for week-over-week continuity. That's an optional enhancement,
-not a dependency. See CONFIGURATION.md.
+For week-over-week continuity there are two optional, auto-detected modes (see
+CONFIGURATION.md): a simple per-client narrative file, or — if you run a
+BlitzBase-style knowledge base — a `compiled/` wiki of living status docs that
+the analyzer reads and maintains, with a vault-level overlay file able to
+override any generic skill convention. Either is an optional enhancement, not a
+dependency.
 
 ## License
 

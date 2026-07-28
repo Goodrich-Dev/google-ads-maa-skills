@@ -173,10 +173,24 @@ The analyzer auto-detects what you provided and tells you what is missing. Steps
 
 ## Troubleshooting
 
+- **Live-account queries fail but the connection "works."** If
+  `list_accessible_customers` succeeds but every `search` against a real client
+  CID errors with an authorization/permission denial, your developer token is
+  almost certainly still **test access** — test tokens can only query test
+  accounts, and the error text does not say so. Fix: request **Basic access**
+  in your MCC's API Center (manual approval, 1–3 business days). See "Before
+  you start" in `shared/frameworks/mcp-setup-guide.md`.
 - **MCP `search` tool missing / unauthorized.** Some Google Ads MCP setups
   require frequent (even daily) reauthorization. Reauthorize the connector and
   retry, or let the run fall back to the email path. If you schedule hands-off
   runs, keep Path B wired as the backup until your connection persists.
+  How to tell **lapsed authorization** from **misconfiguration**: lapsed auth
+  worked before and now the tools are simply absent or prompt for OAuth again —
+  reauthorizing fixes it in one click. Misconfiguration never worked in the
+  first place, or fails with explicit credential/permission errors after
+  authorizing — recheck the env vars and the OAuth app's publishing status
+  (a "Testing"-status app expires refresh tokens after 7 days, which
+  masquerades as constant lapses).
 - **Analyzer can't find the data (email path).** Confirm the feed email arrived
   and carries the `maa-data-automation` label (Step 3). Check the subject starts
   with `[MAA Data]`.

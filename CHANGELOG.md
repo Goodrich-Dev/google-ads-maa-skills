@@ -1,5 +1,45 @@
 # Changelog
 
+## 1.3.0 — 2026-07-23
+
+Fit-and-finish release driven by a cold-start review: a fresh session with no
+prior context attempted to guide setup from the docs alone. Everything that
+tripped it is fixed here.
+
+Docs — blocking fixes:
+- `README.md`: install command had a literal `<your-github-username>`
+  placeholder; now reads `Goodrich-Dev/google-ads-maa-skills`. Added a
+  Requirements line (Python 3.x + matplotlib for charts, pipx for local stdio
+  MCP) and updated the continuity paragraph to describe both auto-detected
+  modes.
+
+Docs — setup depth (`shared/frameworks/mcp-setup-guide.md`):
+- Prerequisites expanded into a "Before you start" walkthrough: where the
+  developer token lives, a dedicated test-vs-Basic access callout (apply on
+  day one; manual approval lag), enabling the Google Ads API in GCP, OAuth
+  client type per deployment (Desktop for stdio, Web for Cloud Run), and
+  publishing the OAuth consent screen to Production moved up from "Known
+  limitation" into setup — doing it up front prevents the 7-day refresh-token
+  expiry instead of treating it as a later fix.
+- Cloud Run option now includes the concrete `gcloud` sequence, with the
+  two-pass deploy called out explicitly (`GOOGLE_ADS_MCP_BASE_URL` is assigned
+  by Cloud Run after the first deploy, so deploy → read URL → update).
+
+Troubleshooting (`WALKTHROUGH.md`):
+- New first entry: what a test-access token failing against a live account
+  looks like, and the fix (request Basic access).
+- Reauthorization entry now distinguishes lapsed authorization from
+  misconfiguration, including the Testing-status OAuth app masquerading as
+  constant lapses.
+
+Hygiene:
+- Added `.gitignore` (output/, credentials patterns, Python and OS noise) —
+  `{OUTPUT_DIR}` defaults to `./output`, which previously landed client MAAs in
+  the repo working tree with nothing preventing a commit.
+- Added `requirements.txt` (matplotlib, optional).
+- Added `shared/scripts/README.md` documenting `correct_qs_columns.py` usage
+  and the never-on-MCP-data warning.
+
 ## 1.2.0 — 2026-07-23
 
 Continuity system upgraded from a single narrative file to an optional

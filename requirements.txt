@@ -1,0 +1,5 @@
+# Optional Python dependencies.
+# The skills themselves are Markdown and need nothing installed.
+# matplotlib: required only by the client-view render step
+#   (skills/google-ads-client-view/scripts/render_charts.py).
+matplotlib
