@@ -1,13 +1,13 @@
 {
-    "name": "google-ads-maa-skills",
-    "description": "Google Ads MAA skill suite for local service businesses: analyzer (Metrics → Analysis → Action), copy optimizer, change scripts, landing-page auditor, script builder, and client-view renderer. Pairs with the read-only Google Ads MCP as the primary data source.",
-    "version": "1.2.0",
-    "author": {
-          "name": "Goodrich-Dev",
-          "url": "https://github.com/Goodrich-Dev/google-ads-maa-skills"
-    },
-    "homepage": "https://github.com/Goodrich-Dev/google-ads-maa-skills",
-    "repository": "https://github.com/Goodrich-Dev/google-ads-maa-skills",
-    "license": "MIT",
-    "keywords": ["google-ads", "maa", "ppc", "local-service", "reporting", "mcp"]
+  "name": "google-ads-maa-skills",
+  "description": "Google Ads MAA skill suite for local service businesses: analyzer (Metrics → Analysis → Action), copy optimizer, change scripts, landing-page auditor, script builder, and client-view renderer. Pairs with the read-only Google Ads MCP as the primary data source.",
+  "version": "1.3.0",
+  "author": {
+    "name": "Goodrich-Dev",
+    "url": "https://github.com/Goodrich-Dev/google-ads-maa-skills"
+  },
+  "homepage": "https://github.com/Goodrich-Dev/google-ads-maa-skills",
+  "repository": "https://github.com/Goodrich-Dev/google-ads-maa-skills",
+  "license": "MIT",
+  "keywords": ["google-ads", "maa", "ppc", "local-service", "reporting", "mcp"]
 }
