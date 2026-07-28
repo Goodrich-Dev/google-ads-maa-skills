@@ -22,21 +22,60 @@ github.com/googleads/google-ads-mcp repository.
 
 ---
 
-## Prerequisites (one-time, per organization)
+## Before you start (one-time, per organization)
 
-You need three credentials before configuring anything. All come from the
-Google Ads API onboarding flow (developers.google.com/google-ads/api → Get
-started):
+You need three credentials before configuring anything. For a first-timer this
+is the longest part of setup — budget an hour of clicking plus up to a few
+business days of waiting on Google's access approval. Work through these in
+order:
 
-1. **Developer token** — the 22-character string from your Google Ads MCC
-   (API Center in the MCC settings). A test-access token works for test
-   accounts; you need Basic access or higher for live client accounts.
-2. **Google Cloud project ID** — any GCP project you control, with the Google
-   Ads API enabled.
-3. **OAuth credentials** — an OAuth2 Client ID/secret pair from that GCP
-   project, or application default credentials. The Google account you
-   authorize with must have access to the accounts you'll query (for an agency,
-   that usually means a user on the MCC).
+### 1. Developer token (from your Google Ads MCC)
+
+Where it lives: sign in to your **MCC** (manager account) → **Tools** →
+**Setup** → **API Center**. The token is a 22-character string.
+
+⚠️ **Test access vs Basic access — the most common first-run failure.** A new
+token starts with **test access**, which can ONLY query test accounts. Queries
+against live client accounts fail with an authorization error that does not
+obviously say "your token is test-level." To reach live accounts you must apply
+for **Basic access** from the same API Center page: the form asks about your
+company, the tool you're building (an internal reporting integration is fine),
+and API usage. Approval is manual and typically takes 1–3 business days —
+apply on day one, before doing anything else, so the wait overlaps the rest of
+setup.
+
+### 2. Google Cloud project with the Google Ads API enabled
+
+Any GCP project you control. Enable the API with:
+
+```
+gcloud services enable googleads.googleapis.com --project YOUR_PROJECT_ID
+```
+
+or in the console: APIs & Services → Library → search "Google Ads API" →
+Enable.
+
+### 3. OAuth client (from that GCP project)
+
+Console → APIs & Services → Credentials → Create credentials → OAuth client ID.
+The application type depends on how you'll run the server:
+
+- **Desktop app** — for Option 1 (local stdio). No redirect URI needed; the
+  first run opens a browser consent flow.
+- **Web application** — for Option 2 (Cloud Run). You'll add the Cloud Run
+  URL's OAuth callback as an authorized redirect URI after the first deploy
+  (see Option 2's two-pass note).
+
+**Publish the OAuth consent screen to Production before going live** (Console →
+APIs & Services → OAuth consent screen → Publish app). An app left in
+"Testing" status issues refresh tokens that **expire after 7 days**, which
+presents later as the connection demanding reauthorization every few days.
+Doing this now prevents the problem; doing it later means re-authorizing one
+more time after you flip it. (This is the root cause behind the
+reauthorization limitation at the bottom of this guide.)
+
+The Google account you authorize with must have access to the accounts you'll
+query — for an agency, that means a user on the MCC.
 
 **Agency/MCC note:** authorize with a user on the MCC and every client account
 under it becomes reachable. The analyzer passes the child account's CID as
@@ -77,17 +116,52 @@ flow in a browser.
 ## Option 2 — Deploy to Cloud Run (shared / remote)
 
 Best when several people or a Cowork/desktop environment need the same server,
-or you want it reachable as a URL connector. Summary (full commands in Google's
-guide):
+or you want it reachable as a URL connector.
 
-1. Create an Artifact Registry repo and build the image with Cloud Build from
-   the `google-ads-mcp` source.
-2. Deploy to Cloud Run with these environment variables:
-   `GOOGLE_PROJECT_ID`, `GOOGLE_ADS_DEVELOPER_TOKEN`,
-   `GOOGLE_ADS_MCP_OAUTH_CLIENT_ID`, `GOOGLE_ADS_MCP_OAUTH_CLIENT_SECRET`,
-   `GOOGLE_ADS_MCP_BASE_URL` (assigned by Cloud Run after first deploy),
-   `FASTMCP_HOST=0.0.0.0`.
-3. Point your MCP client at the deployed URL:
+⚠️ **This is a two-pass deploy.** `GOOGLE_ADS_MCP_BASE_URL` must be set to the
+service's own URL — but Cloud Run only assigns that URL after the first deploy.
+So: deploy once without it, read the URL back, then update the service with the
+variable set (and add the URL's OAuth callback to your Web OAuth client's
+authorized redirect URIs). Skipping the second pass is the classic
+lost-hour here — OAuth appears to start and then fails on redirect.
+
+Concrete sequence (substitute your project, region, and values):
+
+```
+# one-time: build infra
+gcloud config set project YOUR_PROJECT_ID
+gcloud services enable run.googleapis.com cloudbuild.googleapis.com \
+  artifactregistry.googleapis.com
+gcloud artifacts repositories create google-ads-mcp \
+  --repository-format=docker --location=us-central1
+
+# build the image from the google-ads-mcp source checkout
+git clone https://github.com/googleads/google-ads-mcp.git && cd google-ads-mcp
+gcloud builds submit \
+  --tag us-central1-docker.pkg.dev/YOUR_PROJECT_ID/google-ads-mcp/server
+
+# PASS 1 — deploy without the base URL
+gcloud run deploy google-ads-mcp \
+  --image us-central1-docker.pkg.dev/YOUR_PROJECT_ID/google-ads-mcp/server \
+  --region us-central1 \
+  --set-env-vars GOOGLE_PROJECT_ID=YOUR_PROJECT_ID,\
+GOOGLE_ADS_DEVELOPER_TOKEN=YOUR_DEV_TOKEN,\
+GOOGLE_ADS_MCP_OAUTH_CLIENT_ID=YOUR_CLIENT_ID,\
+GOOGLE_ADS_MCP_OAUTH_CLIENT_SECRET=YOUR_CLIENT_SECRET,\
+FASTMCP_HOST=0.0.0.0
+
+# read the assigned URL back
+gcloud run services describe google-ads-mcp --region us-central1 \
+  --format='value(status.url)'
+
+# PASS 2 — update with the base URL set to that value
+gcloud run services update google-ads-mcp --region us-central1 \
+  --update-env-vars GOOGLE_ADS_MCP_BASE_URL=https://YOUR-ASSIGNED-URL.a.run.app
+```
+
+Then add `https://YOUR-ASSIGNED-URL.a.run.app/oauth/callback` (or the callback
+path your server version documents) to the Web OAuth client's authorized
+redirect URIs, and point your MCP client at the deployed URL:
 
 ```json
 {
