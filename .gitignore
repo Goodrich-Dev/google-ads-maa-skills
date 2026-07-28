@@ -1,0 +1,18 @@
+# Default output location for generated MAAs/deliverables - never commit client work
+output/
+
+# Credentials - the setup guide has you handling a developer token and OAuth secrets
+.env
+client_secret*.json
+*credentials*.json
+.mcp.json
+
+# Python
+__pycache__/
+*.pyc
+
+# Local working data
+trend.csv
+
+# OS noise
+.DS_Store
